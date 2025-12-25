@@ -1,11 +1,11 @@
-# getx_cli
+# flutter_getx_cli
 
-A command-line tool to speed up your GetX development workflow.
+A command-line tool to speed up your GetX development workflow in Flutter.
 
 ## Installation
 
 ```bash
-dart pub global activate getx_cli
+dart pub global activate flutter_getx_cli
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ dart pub global activate getx_cli
 ### Create a new module
 
 ```bash
-getx_cli create <module_path>
+flutter_getx_cli create <module_path>
 ```
 
 This will create a new module with a view, controller, and binding. It will also automatically inject the route into your `app_pages.dart` and `app_routes.dart` files.
@@ -21,14 +21,29 @@ This will create a new module with a view, controller, and binding. It will also
 **Example:**
 
 ```bash
-getx_cli create auth/login
+flutter_getx_cli create auth/login
 ```
 
-This will create the following files:
+### Generated Folder Structure
 
-*   `lib/app/modules/auth/login/views/login_view.dart`
-*   `lib/app/modules/auth/login/controllers/login_controller.dart`
-*   `lib/app/modules/auth/login/bindings/login_binding.dart`
+The command above will generate the following folder structure:
+
+```
+lib
+└── app
+    ├── modules
+    │   └── auth
+    │       └── login
+    │           ├── bindings
+    │           │   └── login_binding.dart
+    │           ├── controllers
+    │           │   └── login_controller.dart
+    │           └── views
+    │               └── login_view.dart
+    └── routes
+        ├── app_pages.dart
+        └── app_routes.dart
+```
 
 It will also add a new route to `lib/app/routes/app_routes.dart` and a new `GetPage` to `lib/app/routes/app_pages.dart`.
 
@@ -39,11 +54,25 @@ It will also add a new route to `lib/app/routes/app_routes.dart` and a new `GetP
 ### Remove a module
 
 ```bash
-getx_cli remove <module_path>
+flutter_getx_cli remove <module_path>
 ```
 
-This will remove the module and its associated routes.
+This will remove the module directory and its associated routes.
 
 **Options:**
 
 *   `--routes-only`: Only remove the routes, leaving the module files intact.
+
+## Troubleshooting
+
+**`command not found: flutter_getx_cli`**
+
+If you see this error after installation, it means the directory where `pub` installs global packages is not in your system's `PATH`.
+
+You can fix this by adding the following line to your shell's configuration file (usually `~/.zshrc`, `~/.bashrc`, or `~/.bash_profile`):
+
+```bash
+export PATH="$PATH":"$HOME/.pub-cache/bin"
+```
+
+After adding this line, restart your terminal or run `source ~/.zshrc` (or the equivalent for your shell) to apply the changes.

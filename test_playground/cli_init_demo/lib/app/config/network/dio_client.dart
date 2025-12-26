@@ -1,16 +1,16 @@
 import 'package:dio/dio.dart';
 import 'interceptors/auth_interceptor.dart';
-import 'interceptors/logger_interceptor.dart';
+import 'api_constants.dart';
 
 class DioClient {
-  static final DioClient _instance = DioClient._internal();
+  static final DioClient _instance = DioClient.getInstance();
   factory DioClient() => _instance;
 
   late final Dio dio;
 
-  DioClient._internal() {
+  DioClient.getInstance({String? baseUrl}) {
     final options = BaseOptions(
-      baseUrl: const String.fromEnvironment('API_BASE_URL', defaultValue: ''),
+      baseUrl: baseUrl ?? ApiConstants.baseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -20,7 +20,7 @@ class DioClient {
     );
     dio = Dio(options);
     dio.interceptors.addAll([
-      LoggerInterceptor(),
+      LogInterceptor(),
       AuthInterceptor(tokenProvider: () async {
         // TODO: Provide auth token here
         return null;

@@ -1,3 +1,8 @@
+## 1.0.6
+
+- **Feat**: `init` now creates `services/data/api_service.dart` with a dummy API call.
+- **Docs**: README updated with Services section and usage example.
+
 ## 1.0.5
 
 - **Feat**: Extended `init` to generate `config/network` (Dio client, API constants, `auth` and `logger` interceptors).

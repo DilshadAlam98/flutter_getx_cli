@@ -1,6 +1,6 @@
 name: flutter_getx_cli
 description: A command-line tool for GetX to automate module creation.
-version: 1.0.5
+version: 1.0.6
 homepage: https://github.com/DilshadAlam98/flutter_getx_cli.git
 repository: https://github.com/DilshadAlam98/flutter_getx_cli.git
 

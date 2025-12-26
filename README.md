@@ -64,6 +64,8 @@ lib/app/
 │       ├── app_constants.dart
 │       ├── string_constants.dart
 │       └── global_constants.dart
+├── services/
+│   └── api_service.dart            # Centralized API calls using DioClient
 ├── config/
 │   ├── network/
 │   │   ├── dio_client.dart              # Preconfigured Dio client
@@ -84,9 +86,13 @@ lib/app/
 import 'package:dio/dio.dart';
 import 'package:your_app/app/config/network/dio_client.dart';
 import 'package:your_app/app/config/network/api_constants.dart';
+import 'package:your_app/app/services/data/api_service.dart';
 
-final dio = DioClient().dio;
-final res = await dio.post(ApiConstants.login, data: {'email': 'a@b.c', 'pwd': 'x'});
+final DioClient _client = DioClient.getInstance();
+
+Future<Response> fetchUsers() {
+  return _client.dio.get('https://jsonplaceholder.typicode.com/users');
+}
 ```
 
 **Local Storage Example:**

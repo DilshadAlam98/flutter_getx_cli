@@ -18,7 +18,10 @@ void initProject() {
   _createLocalConfig();
   _createConstants();
   _createDialogUtils();
+  _updateMainDart();
+  _createRoutesTemplates();
   _ensureDependencies();
+  _createDataService();
   print("✅ Core Structure Initialized");
 }
 
@@ -34,6 +37,31 @@ void _createDirectories() {
     Directory(dir).createSync(recursive: true);
     print("   Created directory: $dir");
   }
+}
+
+void _createDataService() {
+  print("🚀 Initializing Services ...");
+
+  final dir = 'lib/app/services';
+  Directory(dir).createSync(recursive: true);
+  final file = File(p.join(dir, 'api_service.dart'));
+  if (!file.existsSync()) {
+    file.writeAsStringSync('''
+import 'package:dio/dio.dart';
+import '../config/network/dio_client.dart';
+
+class ApiService {
+  final DioClient _client = DioClient.getInstance();
+
+    /// Example API call
+  Future<Response> fetchUsers() {
+    return _client.dio.get('https://jsonplaceholder.typicode.com/users');
+  }
+}
+''');
+  }
+  print("✅ Services Initialized $dir");
+
 }
 
 void _createComponents() {
@@ -322,6 +350,8 @@ class AppUtils {
 }
 
 void _createConfig() {
+  print("🚀 Initializing Network Config...");
+
   final baseDir = 'lib/app/config/network';
   Directory(baseDir).createSync(recursive: true);
   Directory(p.join(baseDir, 'interceptors')).createSync(recursive: true);
@@ -331,11 +361,7 @@ void _createConfig() {
   if (!apiConstantsFile.existsSync()) {
     apiConstantsFile.writeAsStringSync('''
 class ApiConstants {
-  static const String baseUrl = const String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: '',
-  );
-
+  static const String baseUrl =  'API_BASE_URL';
   static const String login = '/auth/login';
   static const String signUp = '/auth/signup';
 }
@@ -346,17 +372,17 @@ class ApiConstants {
   final dioClientSrc = [
     "import 'package:dio/dio.dart';",
     "import 'interceptors/auth_interceptor.dart';",
-    "import 'interceptors/logger_interceptor.dart';",
+    "import 'api_constants.dart';",
     "",
     "class DioClient {",
-    "  static final DioClient _instance = DioClient._internal();",
+    "  static final DioClient _instance = DioClient.getInstance();",
     "  factory DioClient() => _instance;",
     "",
     "  late final Dio dio;",
     "",
-    "  DioClient._internal() {",
+    "  DioClient.getInstance({String? baseUrl}) {",
     "    final options = BaseOptions(",
-    "      baseUrl: const String.fromEnvironment('API_BASE_URL', defaultValue: ''),",
+    "      baseUrl: baseUrl ?? ApiConstants.baseUrl,",
     "      connectTimeout: const Duration(seconds: 30),",
     "      receiveTimeout: const Duration(seconds: 30),",
     "      headers: {",
@@ -366,7 +392,7 @@ class ApiConstants {
     "    );",
     "    dio = Dio(options);",
     "    dio.interceptors.addAll([",
-    "      LoggerInterceptor(),",
+    "      LogInterceptor(),",
     "      AuthInterceptor(tokenProvider: () async {",
     "        // TODO: Provide auth token here",
     "        return null;",
@@ -378,32 +404,32 @@ class ApiConstants {
   File(p.join(baseDir, 'dio_client.dart')).writeAsStringSync(dioClientSrc);
 
   // Logger Interceptor
-  final loggerInterceptorSrc = [
-    "import 'package:dio/dio.dart';",
-    "",
-    "class LoggerInterceptor extends Interceptor {",
-    "  @override",
-    "  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {",
-    "    // print('➡️  REQUEST: ' + options.method + ' ' + options.uri.toString());",
-    "    handler.next(options);",
-    "  }",
-    "",
-    "  @override",
-    "  void onResponse(Response response, ResponseInterceptorHandler handler) {",
-    "    // print('✅ RESPONSE: ' + (response.statusCode?.toString() ?? '-') + ' ' + response.realUri.toString());",
-    "    handler.next(response);",
-    "  }",
-    "",
-    "  @override",
-    "  void onError(DioException err, ErrorInterceptorHandler handler) {",
-    "    // print('❌ ERROR: ' + (err.response?.statusCode?.toString() ?? '-') + ' ' + (err.message ?? '-'));",
-    "    handler.next(err);",
-    "  }",
-    "}",
-  ].join('\n');
-  File(
-    p.join(baseDir, 'interceptors', 'logger_interceptor.dart'),
-  ).writeAsStringSync(loggerInterceptorSrc);
+  // final loggerInterceptorSrc = [
+  //   "import 'package:dio/dio.dart';",
+  //   "",
+  //   "class LoggerInterceptor extends Interceptor {",
+  //   "  @override",
+  //   "  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {",
+  //   "    // print('➡️  REQUEST: ' + options.method + ' ' + options.uri.toString());",
+  //   "    handler.next(options);",
+  //   "  }",
+  //   "",
+  //   "  @override",
+  //   "  void onResponse(Response response, ResponseInterceptorHandler handler) {",
+  //   "    // print('✅ RESPONSE: ' + (response.statusCode?.toString() ?? '-') + ' ' + response.realUri.toString());",
+  //   "    handler.next(response);",
+  //   "  }",
+  //   "",
+  //   "  @override",
+  //   "  void onError(DioException err, ErrorInterceptorHandler handler) {",
+  //   "    // print('❌ ERROR: ' + (err.response?.statusCode?.toString() ?? '-') + ' ' + (err.message ?? '-'));",
+  //   "    handler.next(err);",
+  //   "  }",
+  //   "}",
+  // ].join('\n');
+  // File(
+  //   p.join(baseDir, 'interceptors', 'logger_interceptor.dart'),
+  // ).writeAsStringSync(loggerInterceptorSrc);
 
   // Auth Interceptor
   final authInterceptorSrc = [
@@ -420,7 +446,7 @@ class ApiConstants {
     "  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {",
     "    final token = await tokenProvider();",
     "    if (token != null && token.isNotEmpty) {",
-    "      options.headers['Authorization'] = 'Bearer ' + token;",
+    "      options.headers['Authorization'] = 'Bearer \$token';",
     "    }",
     "    handler.next(options);",
     "  }",
@@ -429,9 +455,12 @@ class ApiConstants {
   File(
     p.join(baseDir, 'interceptors', 'auth_interceptor.dart'),
   ).writeAsStringSync(authInterceptorSrc);
+  print("✅ Network Config Initialized $baseDir...");
 }
 
 void _createLocalConfig() {
+  print("🚀 Initializing Local Config...");
+
   final localDir = 'lib/app/config/local';
   Directory(localDir).createSync(recursive: true);
 
@@ -500,9 +529,12 @@ class SharedPrefs {
 }
 ''');
   }
+  print("✅ Local Config Initialized $localDir...");
 }
 
 void _createConstants() {
+  print("🚀 Initializing Constant Files...");
+
   final constantsDir = 'lib/app/core/constants';
   Directory(constantsDir).createSync(recursive: true);
 
@@ -538,9 +570,12 @@ class StringConstants {
 const int defaultTimeoutSeconds = 30;
 ''');
   }
+  print("✅ Constant Files Initialized $constantsDir...");
 }
 
 void _createDialogUtils() {
+  print("🚀 Initializing Utils ...");
+
   final utilsDir = 'lib/app/core/utils';
   Directory(utilsDir).createSync(recursive: true);
 
@@ -578,8 +613,10 @@ class DialogUtils {
       Get.back();
     }
   }
+ }
 ''');
   }
+  print("✅ Utils Initialized $utilsDir...");
 }
 
 void _ensureDependencies() {
@@ -631,4 +668,81 @@ void _ensureDependencies() {
   print(
     "📦 Ensured dependencies in pubspec.yaml: dio, get, shared_preferences",
   );
+}
+
+void _updateMainDart() {
+  final mainFile = File('lib/main.dart');
+  final template = '''
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'app/core/theme/app_theme.dart';
+import 'app/routes/app_pages.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      title: 'Flutter GetX App',
+      theme: AppTheme.light,
+      getPages: AppPages.pages,
+      home: const _DefaultHome(),
+    );
+  }
+}
+
+class _DefaultHome extends StatelessWidget {
+  const _DefaultHome({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Hello GetX')),
+      body: const Center(child: Text('Starter')),
+    );
+  }
+}
+''';
+
+  if (!mainFile.existsSync()) {
+    mainFile.writeAsStringSync(template);
+    return;
+  }
+  mainFile.writeAsStringSync(template);
+}
+
+void _createRoutesTemplates() {
+  final routesDir = Directory('lib/app/routes');
+  routesDir.createSync(recursive: true);
+
+  final pagesFile = File(p.join(routesDir.path, 'app_pages.dart'));
+  if (!pagesFile.existsSync()) {
+    pagesFile.writeAsStringSync('''
+import 'package:get/get.dart';
+
+part 'app_routes.dart';
+
+class AppPages {
+  AppPages._();
+
+  static final pages = <GetPage>[];
+}
+''');
+  }
+
+  final routesFile = File(p.join(routesDir.path, 'app_routes.dart'));
+  if (!routesFile.existsSync()) {
+    routesFile.writeAsStringSync('''
+part of 'app_pages.dart';
+
+abstract class AppRoutes {
+  AppRoutes._();
+}
+''');
+  }
 }

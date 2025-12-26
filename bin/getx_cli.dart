@@ -41,6 +41,11 @@ void _createModule(List<String> args) {
   final snakeName = _toSnakeCase(featureName);
   final moduleDir = p.join(_baseModulesDir, modulePath);
 
+  if (Directory(moduleDir).existsSync()) {
+    print('❌ Module already exists: $modulePath');
+    exit(1);
+  }
+
   print("📦 Creating module: $className");
 
   Directory(p.join(moduleDir, 'bindings')).createSync(recursive: true);
@@ -151,7 +156,9 @@ void _injectRoute(String featureName, String modulePath) {
 
   // app_routes.dart
   var routesContent = routesFile.readAsStringSync();
-  if (!routesContent.contains('static const $routeConst')) {
+  if (routesContent.contains('static const String $routeConst')) {
+    print('⚠️ Route constant already exists in app_routes.dart');
+  } else {
     routesContent = routesContent.replaceFirst(
       RegExp(r'}\s*$'),
       "  static const String $routeConst = '/$modulePath';\n}\n",
@@ -170,11 +177,13 @@ void _injectRoute(String featureName, String modulePath) {
   if (!pagesContent.contains(bindingImport)) {
     pagesContent = pagesContent.replaceFirst(
       RegExp(r"part 'app_routes.dart';"),
-      "part 'app_routes.dart';\n$viewImport\n$bindingImport",
+      "$viewImport\n$bindingImport\n\npart 'app_routes.dart';",
     );
   }
 
-  if (!pagesContent.contains('name: AppRoutes.$routeConst')) {
+  if (pagesContent.contains('name: AppRoutes.$routeConst')) {
+    print('⚠️ GetPage entry already exists in app_pages.dart');
+  } else {
     final pageBlock =
         '''
     GetPage(
@@ -183,14 +192,13 @@ void _injectRoute(String featureName, String modulePath) {
       binding: ${featureName}Binding(),
     ),''';
 
-    pagesContent = pagesContent.replaceFirst(
-      RegExp(r'(pages\s*=\s*(?:<GetPage>)?\s*\[)'),
-      '\$1\n$pageBlock',
+    pagesContent = pagesContent.replaceFirstMapped(
+      RegExp(r'((?:routes|pages)\s*=\s*.*?\s*\[)'),
+      (match) => '${match.group(1)}\n$pageBlock',
     );
+    pagesFile.writeAsStringSync(pagesContent);
+    print('✅ Page injected');
   }
-
-  pagesFile.writeAsStringSync(pagesContent);
-  print('✅ Page injected');
 }
 
 void _removeRoute(String featureName, String modulePath) {
@@ -215,19 +223,20 @@ void _removeRoute(String featureName, String modulePath) {
   if (pagesFile.existsSync()) {
     var c = pagesFile.readAsStringSync();
     c = c.replaceAll(
-      RegExp(
-        r'\s*GetPage\([\s\S]*?AppRoutes\.' + route + r'[\s\S]*?\),?[\r\n]*',
-      ),
+      RegExp(r'\s*GetPage\([\s\S]*?AppRoutes\.' + route + r'[\s\S]*?\n\s*\),'),
+      '',
+    );
+
+    final snakeFolder = _toSnakeCase(folder);
+    c = c.replaceAll(
+      RegExp(r"import .*?/" + snakeFolder + r"_binding.dart';\n?"),
       '',
     );
     c = c.replaceAll(
-      RegExp(r"import .*?/${_toSnakeCase(folder)}_binding.dart';\n?"),
+      RegExp(r"import .*?/" + snakeFolder + r"_view.dart';\n?"),
       '',
     );
-    c = c.replaceAll(
-      RegExp(r"import .*?/${_toSnakeCase(folder)}_view.dart';\n?"),
-      '',
-    );
+
     pagesFile.writeAsStringSync(c);
   }
 }

@@ -2,6 +2,7 @@
 
 import 'dart:io';
 import 'package:path/path.dart' as p;
+import 'package:flutter_getx_cli/init_command.dart';
 
 // TODO: find a better way to do this
 const _baseModulesDir = "lib/app/modules";
@@ -15,6 +16,9 @@ void main(List<String> args) {
   final command = args[0];
 
   switch (command) {
+    case 'init':
+      initProject();
+      break;
     case 'create':
       _createModule(args);
       break;
@@ -192,10 +196,17 @@ void _injectRoute(String featureName, String modulePath) {
       binding: ${featureName}Binding(),
     ),''';
 
-    pagesContent = pagesContent.replaceFirstMapped(
-      RegExp(r'((?:routes|pages)\s*=\s*.*?\s*\[)'),
-      (match) => '${match.group(1)}\n$pageBlock',
-    );
+    if (pagesContent.contains('static final pages = <GetPage>[];')) {
+      pagesContent = pagesContent.replaceFirst(
+        'static final pages = <GetPage>[];',
+        'static final pages = <GetPage>[\n$pageBlock\n];',
+      );
+    } else {
+      pagesContent = pagesContent.replaceFirst(
+        RegExp(r'\]\s*;'),
+        '\n$pageBlock\n];',
+      );
+    }
     pagesFile.writeAsStringSync(pagesContent);
     print('✅ Page injected');
   }

@@ -1,3 +1,21 @@
+## 1.0.5
+
+- **Feat**: Extended `init` to generate `config/network` (Dio client, API constants, `auth` and `logger` interceptors).
+- **Feat**: Added `config/local/shared_prefs.dart` with typed and object helpers (JSON).
+- **Feat**: Added `core/constants` (`app_constants.dart`, `string_constants.dart`, `global_constants.dart`).
+- **Feat**: Added `core/utils/dialog_utils.dart` for alerts, confirmations, and loading dialogs.
+- **Chore**: `init` ensures dependencies: `dio`, `get`, `shared_preferences`.
+- **Fix**: Stabilized `GetPage` injection to append inside list and prevent duplicates.
+- **Docs**: Overhauled README for pub.dev with initialization, routing, config, and examples.
+
+## 1.0.4
+
+- **Feat**: Added `init` command to bootstrap project with `core` directory (components, theme, utils).
+- **Feat**: Included standard UI components (`PrimaryButton`, `PrimaryTextField`, `PrimaryDropdown`).
+- **Feat**: Included pre-configured `AppTheme`, `AppColors`, and `AppTextStyles`.
+- **Feat**: Included `AppUtils` with extensive wrappers for common `GetUtils` functions.
+
+
 ## 1.0.3
 
 - **Fix**: Prevented duplicate route constants and `GetPage` entries when running `create` multiple times.

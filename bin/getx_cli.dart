@@ -61,23 +61,39 @@ void _createModule(List<String> args) {
     p.join(moduleDir, 'controllers', '${snakeName}_controller.dart'),
   ).writeAsStringSync('''
 import 'package:get/get.dart';
+import '../../../services/api_service.dart';
 
-class ${className}Controller extends GetxController {}
+class ${className}Controller extends GetxController {
+  final ApiService service;
+
+  ${className}Controller({required this.service});
+  
+   @override
+  void onInit() {
+    // TODO: implement onInit
+    super.onInit();
+  }
+  
+}
 ''');
 
   // Binding
   File(
     p.join(moduleDir, 'bindings', '${snakeName}_binding.dart'),
   ).writeAsStringSync('''
+
+import 'package:flutter_getx_cli/app/core/constants/global_constants.dart';
+import 'package:flutter_getx_cli/app/services/api_service.dart';
 import 'package:get/get.dart';
 import '../controllers/${snakeName}_controller.dart';
 
-class ${className}Binding extends Bindings {
+class ${className}Binding  extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<${className}Controller>(() => ${className}Controller());
+    Get.lazyPut<${className}Controller>(() => ${className}Controller(service: getIt.get<ApiService>()));
   }
 }
+
 ''');
 
   // View

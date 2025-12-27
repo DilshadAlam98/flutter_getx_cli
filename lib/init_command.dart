@@ -16,6 +16,7 @@ void initProject() {
   }
   _createConfig();
   _createLocalConfig();
+  _createAppConfig();
   _createConstants();
   _createDialogUtils();
   _updateMainDart();
@@ -51,17 +52,17 @@ import 'package:dio/dio.dart';
 import '../config/network/dio_client.dart';
 
 class ApiService {
-  final DioClient _client = DioClient.getInstance();
-
+   final DioClient client;
+   ApiService({required this.client});
+  
     /// Example API call
   Future<Response> fetchUsers() {
-    return _client.dio.get('https://jsonplaceholder.typicode.com/users');
+    return client.dio.get('https://jsonplaceholder.typicode.com/users');
   }
 }
 ''');
   }
   print("✅ Services Initialized $dir");
-
 }
 
 void _createComponents() {
@@ -532,6 +533,29 @@ class SharedPrefs {
   print("✅ Local Config Initialized $localDir...");
 }
 
+void _createAppConfig() {
+  final appConfig = 'lib/app/config';
+  final appConfigFile = File(p.join(appConfig, 'app_config.dart'));
+
+  if (!appConfigFile.existsSync()) {
+    appConfigFile.writeAsStringSync('''
+    
+import 'package:flutter_getx_cli/app/services/api_service.dart';
+import '../core/constants/global_constants.dart';
+import 'network/dio_client.dart';
+
+class AppConfig {
+  static void injectDependency() {
+    getIt.registerSingleton<DioClient>(DioClient());
+    getIt.registerSingleton<ApiService>(
+      ApiService(client: getIt.get<DioClient>()),
+    );
+  }
+}
+    ''');
+  }
+}
+
 void _createConstants() {
   print("🚀 Initializing Constant Files...");
 
@@ -567,7 +591,10 @@ class StringConstants {
   if (!globalConstantsFile.existsSync()) {
     globalConstantsFile.writeAsStringSync('''
 // Add global (top-level) constants here
-const int defaultTimeoutSeconds = 30;
+import 'package:get_it/get_it.dart';
+
+final getIt = GetIt.instance;
+
 ''');
   }
   print("✅ Constant Files Initialized $constantsDir...");
@@ -628,13 +655,18 @@ void _ensureDependencies() {
   try {
     final res1 = Process.runSync('flutter', ['pub', 'add', 'dio']);
     final res2 = Process.runSync('flutter', ['pub', 'add', 'get']);
+
     final res3 = Process.runSync('flutter', [
       'pub',
       'add',
       'shared_preferences',
     ]);
-    if (res1.exitCode == 0 && res2.exitCode == 0 && res3.exitCode == 0) {
-      print("📦 Added dependencies: dio, get, shared_preferences");
+    final res4 = Process.runSync('flutter', ['pub', 'add', 'get_it']);
+    if (res1.exitCode == 0 &&
+        res2.exitCode == 0 &&
+        res3.exitCode == 0 &&
+        res4.exitCode == 0) {
+      print("📦 Added dependencies: dio, get, shared_preferences, get_it");
       return;
     }
   } catch (_) {
@@ -677,9 +709,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'app/core/theme/app_theme.dart';
 import 'app/routes/app_pages.dart';
+import 'package:flutter_getx_cli/app/config/app_config.dart';
 
 void main() {
   runApp(const MyApp());
+  AppConfig.injectDependency();
 }
 
 class MyApp extends StatelessWidget {

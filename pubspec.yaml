@@ -8,10 +8,6 @@ environment:
   sdk: ^3.9.2
 
 dependencies:
-  dio: ^5.9.0
-  get: ^4.7.3
-  get_it: ^9.2.0
-  shared_preferences: ^2.5.4
 
 dev_dependencies:
   lints: ^6.0.0

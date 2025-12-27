@@ -71,10 +71,12 @@ lib/app/
 │   │   ├── dio_client.dart              # Preconfigured Dio client
 │   │   ├── api_constants.dart           # Base URL + endpoints
 │   │   └── interceptors/
-│   │       ├── auth_interceptor.dart    # Injects Authorization header
-│   │       └── logger_interceptor.dart  # Basic request/response logging
-│   └── local/
-│       └── shared_prefs.dart            # Typed SharedPreferences helpers
+│   │       └── auth_interceptor.dart    # Injects Authorization header
+│   │     
+│   │── local/
+│   │    └── shared_prefs.dart  
+│   │     
+│   └── api_config.dart
 └── routes/
     ├── app_pages.dart                   # List<GetPage>
     └── app_routes.dart                  # Route constants

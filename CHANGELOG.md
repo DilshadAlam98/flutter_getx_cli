@@ -1,3 +1,10 @@
+## 1.0.7
+
+- **Feat**: `init` now creates `core/config/api_config.dart` with a dummy API call.
+- **Feat**: added dependency injection using getIt for api service and dio client
+- **Docs**: README updated with Services section and usage example.
+
+
 ## 1.0.6
 
 - **Feat**: `init` now creates `services/data/api_service.dart` with a dummy API call.

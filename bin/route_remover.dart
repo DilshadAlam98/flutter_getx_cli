@@ -6,7 +6,6 @@ String lowerCamel(String s) =>
 
 void removeRoute(String feature, String modulePath) {
   final route = lowerCamel(feature);
-  final folder = p.basename(modulePath);
 
   final routesFile = File('lib/app/routes/app_routes.dart');
   final pagesFile = File('lib/app/routes/app_pages.dart');

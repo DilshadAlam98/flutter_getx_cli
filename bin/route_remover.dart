@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:path/path.dart' as p;
-
 String lowerCamel(String s) =>
     s.isEmpty ? s : s[0].toLowerCase() + s.substring(1);
 
